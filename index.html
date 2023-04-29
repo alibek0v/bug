@@ -97,11 +97,30 @@
                 type="number"
                 required
                 min="1"
+                minlength="1"
                 max="1000"
+                maxlength="4"
                 name="iterations"
                 id="iterations-input"
                 class="form-control"
                 placeholder="Enter number of iterations (min 1, max 1000)"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="tick-speed-input"
+                >Tick speed:</label
+              >
+              <input
+                type="number"
+                required
+                min="1"
+                minlength="1"
+                max="1000"
+                maxlength="4"
+                name="tick-speed"
+                id="tick-speed-input"
+                class="form-control"
+                placeholder="Enter number of tick per iteration (min 1, max 1000)"
               />
             </div>
             <div class="form-check">
