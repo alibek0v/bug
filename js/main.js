@@ -1,7 +1,7 @@
 // on doc ready
 $(function () {
   /* 
-    screen: 'welcome' | 'options' | 'game' | 'quit' | 'restart'
+    screen: 'welcome' | 'settings' | 'options' | 'game' | 'quit' | 'restart'
   */
   const globalState = {
     screen: "welcome",
@@ -14,7 +14,7 @@ $(function () {
   };
 
   function setScreen(screen) {
-    const screens = ["welcome", "options", "game", "quit", "restart"];
+    const screens = ["welcome", "settings", "game", "options", "quit", "restart"];
 
     if (!screens.includes(screen)) {
       throw new Error("Invalid screen passed in");
@@ -64,13 +64,29 @@ $(function () {
   const startBtn = $("#start-btn");
   startBtn.on("click", function (event) {
     event.preventDefault();
-    setScreen("options");
+    setScreen("settings");
+  });
+
+  const gameStartBtn = $("#game-start-btn");
+  startBtn.on("click", function (event) {
+    event.preventDefault();
+
+    if(!isSettingsFormValid()) {
+      return
+    }
+
+    setScreen("game");
   });
 
   // close options card on click on X
   const optionsCloseBtn = $("#options-close-btn");
   optionsCloseBtn.on("click", function (event) {
     event.preventDefault();
+
+    if(!isOptionsFormValid()) {
+      return
+    }
+
     setScreen("game");
   });
 
@@ -185,10 +201,7 @@ $(function () {
     }, 500);
   });
 
-  const saveBtn = $("#save-btn");
-  saveBtn.on("click", function (event) {
-    event.preventDefault();
-
+  function isSettingsFormValid () {
     if (globalState.worldMap === null) {
       alert("Please upload a map");
       return;
@@ -214,6 +227,23 @@ $(function () {
       return;
     }
 
+    return true
+  }
+
+  function isOptionsFormValid() {
+    return true
+  }
+
+  const saveBtn = $("#save-btn");
+  saveBtn.on("click", function (event) {
+    event.preventDefault();
+  
+    if(!isOptionsFormValid()) {
+      return
+    }
+
     setScreen("game");
   });
+
+
 });
