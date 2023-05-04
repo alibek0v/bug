@@ -408,5 +408,4 @@ $(function () {
     game.start();
   });
 
-  GUI.setScreen("options");
 });
