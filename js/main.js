@@ -61,6 +61,17 @@ $(function () {
       gameStatsTeam2Food.text(bugTeam2.food);
     }
 
+    static updateSessionLogs(sessionLogs) {
+      const sessionLogsElement = $("#session-logs");
+      sessionLogsElement.empty();
+
+      sessionLogs.forEach(function (log) {
+        const logElement = $("<div class='log'></div>");
+        logElement.text(JSON.stringify(log));
+        sessionLogsElement.append(logElement);
+      });
+    }
+
     static updateMap(map) {
       const gameField = $("#game-field");
       gameField.empty();
@@ -72,15 +83,54 @@ $(function () {
       const hexWidth = width / map[0].length;
       const hexHeight = height / map.length;
 
-      map.forEach(function (row) {
+      map.forEach(function (row, rowIndex) {
         const rowElement = $("<div class='hex-row'></div>");
-        row.forEach(function (cell) {
+
+        row.forEach(function (cell, cellIndex) {
           const cellElement = $("<div class='hex-cell'></div>");
-          cellElement.addClass(`game-map-cell-${cell}`);
+          cellElement.addClass(`game-map-cell-${rowIndex}-${cellIndex}`);
           cellElement.css("width", `${hexWidth}px`);
           cellElement.css("height", `${hexHeight}px`);  
+
+          // # – obstacle
+          // . – empty cell (ie, no bug) - empty cell
+          // - – black swarm nest
+          // + – empty cell, red swarm nest 
+          // 1..9 empty cell with number of food units
+          
+          switch (cell) {
+            case "#":
+              cellElement.addClass("obstacle-cell");
+              cellElement.append('<img src="images/rocks.png" />')
+              break;
+            case ".":
+              cellElement.addClass("empty-cell");
+              // cellElement.append('<img src="images/empty.png" />')
+              break;
+            case "-":
+              cellElement.addClass("team-1-nest");
+              cellElement.append('<img src="images/bug1.png"/>')
+              break;
+            case "+":
+              cellElement.addClass("team-2-nest");
+              cellElement.append('<img src="images/bug2.png" />')
+              break;
+            default:
+              cellElement.addClass("empty-cell");
+              // cellElement.append('<img src="images/empty.png" class="rock-img" />')
+              break;
+          }
+
+          if(cell.match(/[1-9]/)) {
+            cellElement.addClass(`food-cell-${cell}`);
+            cellElement.append(`<img src="images/food.png" />`)
+          }
+
+          // cellElement.text(cell);
+
           rowElement.append(cellElement);
         });
+
         gameField.append(rowElement);
       });
     }
@@ -199,9 +249,9 @@ $(function () {
     }   
 
     render() {
-      console.log(this)
       GUI.updateStats(this.stats, this.currentIteration, this.totalIterations);
       GUI.updateMap(this.map);
+      GUI.updateSessionLogs(this.sessionLogs);
     }
   } 
 
