@@ -1,8 +1,8 @@
 {
-  "name": "bug",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": "git@github.com:alibek0v/bug.git",
-  "author": "Akylbek Maxutov <mrmaksutovakyl@gmail.com>",
-  "license": "MIT"
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "scripts": {
+    "test": "jest"
+  }
 }

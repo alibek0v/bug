@@ -61,15 +61,11 @@ $(function () {
       gameStatsTeam2Food.text(bugTeam2.food);
     }
 
-    static updateSessionLogs(sessionLogs) {
+    static log(log) {
       const sessionLogsElement = $("#session-logs");
       sessionLogsElement.empty();
 
-      sessionLogs.forEach(function (log) {
-        const logElement = $("<div class='log'></div>");
-        logElement.text(JSON.stringify(log));
-        sessionLogsElement.append(logElement);
-      });
+      sessionLogsElement.append(`<div class="log">${log}</div>`);
     }
 
     static updateMap(map) {
@@ -206,6 +202,16 @@ $(function () {
         throw new Error("Invalid map characters");
       }
 
+      // count all the food
+      const totalFood = flatMapArray.reduce(function (total, character) {
+        if (character.match(/[1-9]/)) {
+          return total + parseInt(character);
+        }
+        return total;
+      }, 0);
+
+      this.stats.totalFood = totalFood;
+
       this.map = mapArray;
     }
 
@@ -251,7 +257,6 @@ $(function () {
     render() {
       GUI.updateStats(this.stats, this.currentIteration, this.totalIterations);
       GUI.updateMap(this.map);
-      GUI.updateSessionLogs(this.sessionLogs);
     }
   } 
 
@@ -334,33 +339,32 @@ $(function () {
     }
     const mapFile = gameMapInput[0].files[0];
 
+    if (bugTeam1Input[0].files.length === 0) {
+      alert("Please select a bug team 1 file");
+      return;
+    }
+
+    const bugTeam1File = bugTeam1Input[0].files[0];
+
     // read file from input
-    // if (bugTeam1Input[0].files.length === 0) {
-    //   alert("Please select a bug team 1 file");
-    //   return;
-    // }
+    if (bugTeam2Input[0].files.length === 0) {
+      alert("Please select a bug team 2 file");
+      return;
+    }
 
-    // const bugTeam1File = bugTeam1Input[0].files[0];
+    const bugTeam2File = bugTeam2Input[0].files[0];
 
-    // // read file from input
-    // if (bugTeam2Input[0].files.length === 0) {
-    //   alert("Please select a bug team 2 file");
-    //   return;
-    // }
+    const totalIterations = totalIterationsInput.val();
+    if (totalIterations === "") {
+      alert("Please enter a total number of iterations");
+      return;
+    }
 
-    // const bugTeam2File = bugTeam2Input[0].files[0];
-
-    // const totalIterations = totalIterationsInput.val();
-    // if (totalIterations === "") {
-    //   alert("Please enter a total number of iterations");
-    //   return;
-    // }
-
-    // const tickSpeed = tickSpeedInput.val();
-    // if (tickSpeed === "") {
-    //   alert("Please enter a tick speed");
-    //   return;
-    // }
+    const tickSpeed = tickSpeedInput.val();
+    if (tickSpeed === "") {
+      alert("Please enter a tick speed");
+      return;
+    }
 
     // read the files
     const mapReader = new FileReader();
@@ -375,21 +379,21 @@ $(function () {
     };
     mapReader.readAsText(mapFile);
 
-    // const bugTeam1Reader = new FileReader();
-    // bugTeam1Reader.onload = function (event) {
-    //   const bugTeam1 = event.target.result;
-    //   game.setBugTeam1(bugTeam1);
-    // };
+    const bugTeam1Reader = new FileReader();
+    bugTeam1Reader.onload = function (event) {
+      const bugTeam1 = event.target.result;
+      game.setBugTeam1(bugTeam1);
+    };
 
-    // bugTeam1Reader.readAsText(bugTeam1File);
+    bugTeam1Reader.readAsText(bugTeam1File);
 
-    // const bugTeam2Reader = new FileReader();
-    // bugTeam2Reader.onload = function (event) {
-    //   const bugTeam2 = event.target.result;
-    //   game.setBugTeam2(bugTeam2);
-    // };
+    const bugTeam2Reader = new FileReader();
+    bugTeam2Reader.onload = function (event) {
+      const bugTeam2 = event.target.result;
+      game.setBugTeam2(bugTeam2);
+    };
 
-    // bugTeam2Reader.readAsText(bugTeam2File);
+    bugTeam2Reader.readAsText(bugTeam2File);
 
     try {
       game.setTotalIterations(totalIterationsInput.val());
@@ -403,4 +407,6 @@ $(function () {
 
     game.start();
   });
+
+  GUI.setScreen("options");
 });
