@@ -19,10 +19,11 @@
     <link rel="stylesheet" href="./css/main.css" />
   </head>
   <body>
+
     <!-- Welcome screen -->
     <div id="welcome-screen">
       <div id="welcome-box">
-        <div>
+        <div class="p-4">
           <h1 class="text-center mb-4">
             <span class="circle-letter">B</span>
             <b>Welcome to Bug World!</b>
@@ -51,7 +52,6 @@
               >
               <input
                 type="file"
-                required
                 name="game-map-file"
                 id="game-map-input"
                 class="form-control"
@@ -64,7 +64,6 @@
               >
               <input
                 type="file"
-                required
                 name="bug-team-1-file"
                 id="bug-team-1-input"
                 class="form-control"
@@ -77,7 +76,6 @@
               >
               <input
                 type="file"
-                required
                 name="bug-team-2-file"
                 id="bug-team-2-input"
                 class="form-control"
@@ -90,15 +88,14 @@
               >
               <input
                 type="number"
-                required
-                min="1"
-                minlength="1"
+                min="100"
+                minlength="3"
                 max="1000"
                 maxlength="4"
-                name="iterations"
-                id="iterations-input"
+                name="total-iterations"
+                id="total-iterations-input"
                 class="form-control"
-                placeholder="Enter number of iterations (min 1, max 1000)"
+                placeholder="Enter number of iterations (min 100, max 1000)"
               />
             </div>
             <div>
@@ -107,15 +104,14 @@
               >
               <input
                 type="number"
-                required
                 min="1"
                 minlength="1"
-                max="1000"
-                maxlength="4"
+                max="100"
+                maxlength="3"
                 name="tick-speed"
                 id="tick-speed-input"
                 class="form-control"
-                placeholder="Enter number of tick per iteration (min 1, max 1000)"
+                placeholder="Enter number of tick per iteration (min 1, max 100)"
               />
             </div>
             <div class="form-check">
@@ -124,7 +120,6 @@
               >
               <input
                 type="checkbox"
-                required
                 checked="true"
                 name="log-session"
                 id="log-session-input"
@@ -132,7 +127,7 @@
               />
             </div>
             <div class="text-center">
-              <button id="game-start-btn" class="btn btn-start">Start</button>
+              <button type="submit" class="btn btn-start">Start</button>
             </div>
           </div>
         </form>
@@ -145,11 +140,13 @@
         <div class="row">
           <div class="col-8">
             <div id="game-field">
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
-              <div class="cell"></div>
+              <div class="hex-row">
+                <div class="hex-cell"></div>
+              <div class="hex-cell"></div>
+              <div class="hex-cell"></div>
+              <div class="hex-cell"></div>
+              <div class="hex-cell"></div>
+              </div>
             </div>
           </div>
           <div class="col-4">
@@ -200,7 +197,7 @@
 
         <div class="row">
           <div class="col">
-            <div class="fw-semibold fs-3">Session logs:</div>
+            <div class="fw-semibold fs-3" id="session-logs">Session logs:</div>
           </div>
         </div>
       </div>

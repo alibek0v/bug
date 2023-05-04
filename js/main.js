@@ -1,249 +1,345 @@
 // on doc ready
 $(function () {
-  /* 
-    screen: 'welcome' | 'settings' | 'options' | 'game' | 'quit' | 'restart'
-  */
-  const globalState = {
-    screen: "welcome",
-    worldMap: null,
-    bugTeam1: null,
-    bugTeam2: null,
-    iterations: null,
-    tickSpeed: null,
-    logSession: false,
-  };
 
-  function setScreen(screen) {
-    const screens = ["welcome", "settings", "game", "options", "quit", "restart"];
+  // classes
+  class GUI {
+    static screens = [
+      "welcome",
+      "settings",
+      "game",
+      "options",
+      "quit",
+      "restart",
+    ];
+    static currentScreen = "welcome";
 
-    if (!screens.includes(screen)) {
-      throw new Error("Invalid screen passed in");
+    static alert(text) {
+      alert(text);
     }
 
-    globalState.screen = screen;
+    static setScreen(newScreen) {
+      if (!this.screens.includes(newScreen)) {
+        throw new Error("Invalid screen passed in");
+      }
 
-    // hide all screens except the one passed in
-    screens.forEach(function (screen) {
-      $(`#${screen}-screen`).hide();
-    });
+      // update the current screen
+      this.currentScreen = newScreen;
 
-    // show the screen passed in
-    $(`#${screen}-screen`).show();
+      // hide all screens except the one passed in
+      this.screens.forEach(function (screen) {
+        $(`#${screen}-screen`).hide();
+      });
+
+      // show the screen passed in
+      $(`#${this.currentScreen}-screen`).show();
+    }
+
+    static updateStats(stats, currentIteration, totalIterations) {
+      // stats dom elements
+      const gameStatsIterations = $("#game-stats-iterations");
+      const gameStatsFoods = $("#game-stats-food");
+      const gameStatsTeam1Alive = $("#game-stats-bug-team-1-alive");
+      const gameStatsTeam2Alive = $("#game-stats-bug-team-2-alive");
+      const gameStatsTeam1Killed = $("#game-stats-bug-team-1-killed");
+      const gameStatsTeam2Killed = $("#game-stats-bug-team-2-killed");
+      const gameStatsTeam1Food = $("#game-stats-bug-team-1-food");
+      const gameStatsTeam2Food = $("#game-stats-bug-team-2-food");
+
+      // game iterations
+      gameStatsIterations.text(`${currentIteration}/${totalIterations}`);
+
+      // game food stat
+      gameStatsFoods.text(stats.totalFood);
+
+      // update the team stats
+      const { bugTeam1, bugTeam2 } = stats;
+      gameStatsTeam1Alive.text(bugTeam1.alive);
+      gameStatsTeam2Alive.text(bugTeam2.alive);
+      gameStatsTeam1Killed.text(bugTeam1.killed);
+      gameStatsTeam2Killed.text(bugTeam2.killed);
+      gameStatsTeam1Food.text(bugTeam1.food);
+      gameStatsTeam2Food.text(bugTeam2.food);
+    }
+
+    static updateMap(map) {
+      const gameField = $("#game-field");
+      gameField.empty();
+
+      // get width of the div in pixels
+      const width = gameField.width();
+      const height = gameField.height();
+
+      const hexWidth = width / map[0].length;
+      const hexHeight = height / map.length;
+
+      map.forEach(function (row) {
+        const rowElement = $("<div class='hex-row'></div>");
+        row.forEach(function (cell) {
+          const cellElement = $("<div class='hex-cell'></div>");
+          cellElement.addClass(`game-map-cell-${cell}`);
+          cellElement.css("width", `${hexWidth}px`);
+          cellElement.css("height", `${hexHeight}px`);  
+          rowElement.append(cellElement);
+        });
+        gameField.append(rowElement);
+      });
+    }
+
   }
 
-  function setWorldMap(worldMap) {
-    globalState.worldMap = worldMap;
+  class Game {
+    constructor() {
+      this.map = null;
+      this.bugTeam1 = null;
+      this.bugTeam2 = null;
+      this.totalIterations = 0;
+      this.currentIteration = 0;
+      this.tickSpeed = 0;
+      this.totalFood = 0;
+      this.stats = {
+        bugTeam1: {
+          alive: 0,
+          killed: 0,
+          food: 0,
+        },
+        bugTeam2: {
+          alive: 0,
+          killed: 0,
+          food: 0,
+        },
+      };
+      this.sessionLogs = [];
+    }
 
-    console.log("globalState: ", globalState);
-  }
+    setMap(map) {
+      const lines = map.split("\n");
+      const width = parseInt(lines[0]);
+      const height = parseInt(lines[1]);
+      const mapLines = lines.slice(2);
 
-  function setBugTeam1(bugTeam1) {
-    globalState.bugTeam1 = bugTeam1;
+      if (mapLines.length !== height) {
+        throw new Error("Invalid map height");
+      }
 
-    console.log("globalState: ", globalState);
-  }
+      const mapArray = [];
 
-  function setBugTeam2(bugTeam2) {
-    globalState.bugTeam2 = bugTeam2;
+      mapLines.forEach(function (line) {
+        const lineArray = line.split(" ");
+        if (lineArray.length !== width) {
+          throw new Error("Invalid map width");
+        }
+        mapArray.push(lineArray);
+      });
 
-    console.log("globalState: ", globalState);
-  }
+      const flatMapArray = mapArray.flat();
+      const allowedCharactes = [
+        "#",
+        "+",
+        "-",
+        ".",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+      ];
 
-  function setIterations(iterations) {
-    globalState.iterations = iterations;
+      const hasInvalidCharacters = flatMapArray.some(function (character) {
+        return !allowedCharactes.includes(character);
+      });
 
-    console.log("globalState: ", globalState);
-  }
+      if (hasInvalidCharacters) {
+        throw new Error("Invalid map characters");
+      }
 
-  function setTickSpeed(tickSpeed) {
-    globalState.tickSpeed = tickSpeed;
+      this.map = mapArray;
+    }
 
-    console.log("globalState: ", globalState);
-  }
+    setBugTeam1(bugTeam1) {
+      this.bugTeam1 = bugTeam1;
+    }
 
+    setBugTeam2(bugTeam2) {
+      this.bugTeam2 = bugTeam2;
+    }
+
+    setTotalIterations(iterations) {
+      if (isNaN(iterations) || iterations === "" || iterations === null) {
+        throw new Error("Please enter a total number of iterations");
+      }
+
+      this.totalIterations = iterations;
+    }
+
+    setTickSpeed(tickSpeed) {
+      this.tickSpeed = tickSpeed;
+    }
+
+    start() {
+      // start the game
+
+      // set the current iteration to 0
+      this.currentIteration = 0;
+
+      // set the total food to 0
+      this.totalFood = 0;
+
+      // set the stats to 0
+      this.stats = {
+        bugTeam1: {
+          alive: 0,
+          killed: 0,
+          food: 0,
+        },
+        bugTeam2: {
+          alive: 0,
+          killed: 0,
+          food: 0,
+        },
+      };
+
+      GUI.updateStats(this.stats, this.currentIteration, this.totalIterations);
+
+      // start the iterations
+      const interval = setInterval(() => {
+        // check if the game is over
+        if (this.currentIteration >= this.totalIterations) {
+          clearInterval(interval);
+          GUI.alert("Game over")
+          return;
+        }
+
+        // run the iteration
+        this.render();
+
+        // increment the current iteration
+        this.currentIteration++;
+      } , this.tickSpeed);
+    }   
+
+    render() {
+      GUI.updateStats(this.stats, this.currentIteration, this.totalIterations);
+      GUI.updateMap(this.map);
+    }
+  } 
+
+  // globals
+  const game = new Game();
+
+  // dom elements
   const startBtn = $("#start-btn");
-  startBtn.on("click", function (event) {
-    event.preventDefault();
-    setScreen("settings");
-  });
 
-  const gameStartBtn = $("#game-start-btn");
-  startBtn.on("click", function (event) {
-    event.preventDefault();
-
-    if(!isSettingsFormValid()) {
-      return
-    }
-
-    setScreen("game");
-  });
-
-  // close options card on click on X
-  const optionsCloseBtn = $("#options-close-btn");
-  optionsCloseBtn.on("click", function (event) {
-    event.preventDefault();
-
-    if(!isOptionsFormValid()) {
-      return
-    }
-
-    setScreen("game");
-  });
-
-  // on options on click on button
-  const optionsOpenBtn = $("#options-open-btn");
-  optionsOpenBtn.on("click", function (event) {
-    event.preventDefault();
-    setScreen("options");
-  });
-
-  // on quit open quit screen
-  const quitBtn = $("#quit-btn");
-  quitBtn.on("click", function (event) {
-    event.preventDefault();
-    setScreen("quit");
-  });
-
-  // on quit yes
-  const quitYesBtn = $("#quit-yes-btn");
-  quitYesBtn.on("click", function (event) {
-    event.preventDefault();
-
-    setScreen("restart");
-  });
-
-  // on quit no
-  const quitNoBtn = $("#quit-no-btn");
-  quitNoBtn.on("click", function (event) {
-    event.preventDefault();
-
-    setScreen("game");
-  });
-
-  // on restart reset game
-  const restartBtn = $("#restart-btn");
-  restartBtn.on("click", function (event) {
-    event.preventDefault();
-
-    setScreen("welcome");
-  });
+  const settingsForm = $("#settings-form");
 
   const gameMapInput = $("#game-map-input");
-  gameMapInput.on("change", function (event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-      const map = event.target.result;
-      console.log("worldMap: ", map);
-
-      setWorldMap(map);
-    };
-
-    reader.readAsText(file);
-  });
-
   const bugTeam1Input = $("#bug-team-1-input");
-  bugTeam1Input.on("change", function (event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-      const bugTeam1 = event.target.result;
-      console.log("bugTeam1: ", bugTeam1);
-
-      globalState.bugTeam1 = bugTeam1;
-    };
-
-    reader.readAsText(file);
-  });
-
   const bugTeam2Input = $("#bug-team-2-input");
-  bugTeam2Input.on("change", function (event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-      const bugTeam2 = event.target.result;
-      console.log("bugTeam2: ", bugTeam2);
-
-      globalState.bugTeam2 = bugTeam2;
-    };
-
-    reader.readAsText(file);
-  });
-
-  const iterationsInput = $("#iterations-input");
-  // debounce
-  let timeout = null;
-  iterationsInput.on("keyup", function (event) {
-    clearTimeout(timeout);
-
-    timeout = setTimeout(function () {
-      const iterations = event.target.value;
-      console.log("iterations: ", iterations);
-
-      setIterations(iterations);
-    }, 500);
-  });
-
+  const totalIterationsInput = $("#total-iterations-input");
   const tickSpeedInput = $("#tick-speed-input");
-  // debounce
-  let timeout2 = null;
-  tickSpeedInput.on("keyup", function (event) {
-    clearTimeout(timeout2);
 
-    timeout2 = setTimeout(function () {
-      const tickSpeed = event.target.value;
-      console.log("tickSpeed: ", tickSpeed);
-
-      setTickSpeed(tickSpeed);
-    }, 500);
-  });
-
-  function isSettingsFormValid () {
-    if (globalState.worldMap === null) {
-      alert("Please upload a map");
-      return;
-    }
-
-    if (globalState.bugTeam1 === null) {
-      alert("Please upload a bug team 1");
-      return;
-    }
-
-    if (globalState.bugTeam2 === null) {
-      alert("Please upload a bug team 2");
-      return;
-    }
-
-    if (globalState.iterations === null) {
-      alert("Please enter a number of iterations");
-      return;
-    }
-
-    if (globalState.tickSpeed === null) {
-      alert("Please enter a tick speed");
-      return;
-    }
-
-    return true
-  }
-
-  function isOptionsFormValid() {
-    return true
-  }
-
+  const optionsOpenBtn = $("#options-open-btn");
+  const optionsCloseBtn = $("#options-close-btn");
   const saveBtn = $("#save-btn");
-  saveBtn.on("click", function (event) {
-    event.preventDefault();
-  
-    if(!isOptionsFormValid()) {
-      return
-    }
 
-    setScreen("game");
+  const quitBtn = $("#quit-btn");
+  const quitYesBtn = $("#quit-yes-btn");
+  const quitNoBtn = $("#quit-no-btn");
+
+  const restartBtn = $("#restart-btn");
+
+  const sessionLogs = $("#session-logs");
+
+
+  // listeners
+  startBtn.on("click", function (event) {
+    event.preventDefault();
+    GUI.setScreen("settings");
   });
 
+  settingsForm.on("submit", function (event) {
+    event.preventDefault();
+    // get the values from the form
 
+    // read file from input
+    if (gameMapInput[0].files.length === 0) {
+      alert("Please select a map file");
+      return;
+    }
+    const mapFile = gameMapInput[0].files[0];
+
+    // read file from input
+    // if (bugTeam1Input[0].files.length === 0) {
+    //   alert("Please select a bug team 1 file");
+    //   return;
+    // }
+
+    // const bugTeam1File = bugTeam1Input[0].files[0];
+
+    // // read file from input
+    // if (bugTeam2Input[0].files.length === 0) {
+    //   alert("Please select a bug team 2 file");
+    //   return;
+    // }
+
+    // const bugTeam2File = bugTeam2Input[0].files[0];
+
+    // const totalIterations = totalIterationsInput.val();
+    // if (totalIterations === "") {
+    //   alert("Please enter a total number of iterations");
+    //   return;
+    // }
+
+    // const tickSpeed = tickSpeedInput.val();
+    // if (tickSpeed === "") {
+    //   alert("Please enter a tick speed");
+    //   return;
+    // }
+
+    // read the files
+    const mapReader = new FileReader();
+    mapReader.onload = function (event) {
+      const map = event.target.result;
+      try {
+        game.setMap(map);
+      } catch (error) {
+        alert(error.message);
+        return;
+      }
+    };
+    mapReader.readAsText(mapFile);
+
+    // const bugTeam1Reader = new FileReader();
+    // bugTeam1Reader.onload = function (event) {
+    //   const bugTeam1 = event.target.result;
+    //   game.setBugTeam1(bugTeam1);
+    // };
+
+    // bugTeam1Reader.readAsText(bugTeam1File);
+
+    // const bugTeam2Reader = new FileReader();
+    // bugTeam2Reader.onload = function (event) {
+    //   const bugTeam2 = event.target.result;
+    //   game.setBugTeam2(bugTeam2);
+    // };
+
+    // bugTeam2Reader.readAsText(bugTeam2File);
+
+    try {
+      game.setTotalIterations(totalIterationsInput.val());
+      game.setTickSpeed(tickSpeedInput.val());
+    } catch (error) {
+      alert(error.message);
+      return;
+    }
+
+    GUI.setScreen("game");
+
+    game.start();
+  });
+
+  // GUI.setScreen("game");
 });

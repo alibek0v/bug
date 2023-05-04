@@ -93,3 +93,12 @@ p {
   height: 500px;
 }
 
+.hex-cell {
+  border: 1px solid black;
+  width: 30px;
+  height: 30px;
+}
+
+.hex-row {
+  display: flex;
+}
