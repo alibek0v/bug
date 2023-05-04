@@ -95,8 +95,8 @@ $(function () {
       this.totalIterations = 0;
       this.currentIteration = 0;
       this.tickSpeed = 0;
-      this.totalFood = 0;
       this.stats = {
+        totalFood: 0,
         bugTeam1: {
           alive: 0,
           killed: 0,
@@ -179,31 +179,8 @@ $(function () {
       this.tickSpeed = tickSpeed;
     }
 
+    // tickSpeed frames per second
     start() {
-      // start the game
-
-      // set the current iteration to 0
-      this.currentIteration = 0;
-
-      // set the total food to 0
-      this.totalFood = 0;
-
-      // set the stats to 0
-      this.stats = {
-        bugTeam1: {
-          alive: 0,
-          killed: 0,
-          food: 0,
-        },
-        bugTeam2: {
-          alive: 0,
-          killed: 0,
-          food: 0,
-        },
-      };
-
-      GUI.updateStats(this.stats, this.currentIteration, this.totalIterations);
-
       // start the iterations
       const interval = setInterval(() => {
         // check if the game is over
@@ -218,10 +195,11 @@ $(function () {
 
         // increment the current iteration
         this.currentIteration++;
-      } , this.tickSpeed);
+      }, 1000 / this.tickSpeed);
     }   
 
     render() {
+      console.log(this)
       GUI.updateStats(this.stats, this.currentIteration, this.totalIterations);
       GUI.updateMap(this.map);
     }
