@@ -209,7 +209,49 @@
           <h2 class="text-center fw-bold">Game Options</h2>
           <div class="mt-4 d-flex flex-column gap-4">
             <div class="text-center">
-              <button id="save-btn" class="btn btn-success">Save</button>
+
+              <div class="mt-4 d-flex flex-column gap-4">
+                               
+                
+                <div>
+                  <label class="form-label" for="options-iterations-input"
+                    >Select Number of Iterations:</label
+                  >
+                  <input
+                    type="number"
+                    min="100"
+                    minlength="3"
+                    max="1000"
+                    maxlength="4"
+                    name="options-total-iterations"
+                    id="options-total-iterations-input"
+                    class="form-control"
+                    placeholder="Enter number of iterations (min 100, max 1000)"
+                  />
+                </div>
+                <div>
+                  <label class="form-label" for="options-tick-speed-input"
+                    >Tick speed:</label
+                  >
+                  <input
+                    type="number"
+                    min="1"
+                    minlength="1"
+                    max="100"
+                    maxlength="3"
+                    name="options-tick-speed"
+                    id="options-tick-speed-input"
+                    class="form-control"
+                    placeholder="Enter number of tick per iteration (min 1, max 100)"
+                  />
+                </div>
+                
+                <button id="save-btn" class="btn btn-success">Save</button>
+                
+              </div>
+            </form>
+
+              
             </div>
           </div>
         </form>
