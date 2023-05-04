@@ -1,4 +1,0 @@
-// game class
-class Game {
-    
-}

@@ -288,6 +288,41 @@ $(function () {
     GUI.setScreen("settings");
   });
 
+  optionsOpenBtn.on("click", function (event) {
+    event.preventDefault();
+    GUI.setScreen("options");
+  });
+
+  optionsCloseBtn.on("click", function (event) {
+    event.preventDefault();
+    GUI.setScreen("game");
+  });
+
+  saveBtn.on("click", function (event) {
+    event.preventDefault();
+    GUI.setScreen("game");
+  });
+
+  quitBtn.on("click", function (event) {
+    event.preventDefault();
+    GUI.setScreen("quit");
+  });
+
+  quitYesBtn.on("click", function (event) {
+    event.preventDefault();
+    GUI.setScreen("restart");
+  });
+
+  quitNoBtn.on("click", function (event) {
+    event.preventDefault();
+    GUI.setScreen("game");
+  });
+
+  restartBtn.on("click", function (event) {
+    event.preventDefault();
+    GUI.setScreen("welcome");
+  });
+
   settingsForm.on("submit", function (event) {
     event.preventDefault();
     // get the values from the form
@@ -368,6 +403,4 @@ $(function () {
 
     game.start();
   });
-
-  // GUI.setScreen("game");
 });
